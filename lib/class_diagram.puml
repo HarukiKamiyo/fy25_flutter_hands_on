@@ -1,0 +1,22 @@
+@startuml
+
+class MyApp {
+  +build(context: BuildContext): Widget
+}
+
+class MyHomePage {
+  +title: String
+  +createState(): State<MyHomePage>
+}
+
+class _MyHomePageState {
+  -_counter: int
+  -_incrementCounter(): void
+  +build(context: BuildContext): Widget
+}
+
+MyApp --|> StatelessWidget
+MyHomePage --|> StatefulWidget
+_MyHomePageState --|> State
+
+@enduml
