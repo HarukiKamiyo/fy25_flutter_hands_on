@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
-import 'package:provider/provider.dart';
 
-class HistoryListView extends StatefulWidget {
+class HistoryListView extends ConsumerStatefulWidget {
   const HistoryListView({super.key});
 
   @override
-  State<HistoryListView> createState() => _HistoryListViewState();
+  ConsumerState<HistoryListView> createState() => _HistoryListViewState();
 }
 
-class _HistoryListViewState extends State<HistoryListView> {
+class _HistoryListViewState extends ConsumerState<HistoryListView> {
   final _key = GlobalKey();
 
   static const Gradient _maskingGradient = LinearGradient(
@@ -21,7 +21,7 @@ class _HistoryListViewState extends State<HistoryListView> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<HomeViewModel>();
+    final viewModel = ref.watch(homeViewModelProvider);
     viewModel.historyListKey = _key;
 
     return ShaderMask(

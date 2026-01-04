@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
 import 'package:fy25_flutter_hands_on/views/favorites_page.dart';
 import 'package:fy25_flutter_hands_on/views/generator_page.dart';
-import 'package:provider/provider.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    var viewModel = context.watch<HomeViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    var viewModel = ref.watch(homeViewModelProvider);
     var colorScheme = Theme.of(context).colorScheme;
 
     Widget page;

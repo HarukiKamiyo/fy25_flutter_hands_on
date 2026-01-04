@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends ConsumerWidget {
   const FavoritesPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     var theme = Theme.of(context);
-    var viewModel = context.watch<HomeViewModel>();
+    var viewModel = ref.watch(homeViewModelProvider);
 
     if (viewModel.favorites.isEmpty) {
       return Center(

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
 import 'package:fy25_flutter_hands_on/views/widgets/big_card.dart';
 import 'package:fy25_flutter_hands_on/views/widgets/history_list_view.dart';
-import 'package:provider/provider.dart';
 
-class GeneratorPage extends StatelessWidget {
+class GeneratorPage extends ConsumerWidget {
   const GeneratorPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    var viewModel = context.watch<HomeViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    var viewModel = ref.watch(homeViewModelProvider);
     var pair = viewModel.current;
 
     IconData icon;
