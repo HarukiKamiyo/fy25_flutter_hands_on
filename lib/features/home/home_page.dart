@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
-import 'package:fy25_flutter_hands_on/views/favorites_page.dart';
-import 'package:fy25_flutter_hands_on/views/generator_page.dart';
+import 'package:fy25_flutter_hands_on/features/home/home_notifier.dart';
+import 'package:fy25_flutter_hands_on/features/favorites/favorites_page.dart';
+import 'package:fy25_flutter_hands_on/features/home/generator_page.dart';
 
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var viewModel = ref.watch(homeViewModelProvider);
-    var colorScheme = Theme.of(context).colorScheme;
+    final state = ref.watch(homeNotifierProvider);
+    final notifier = ref.read(homeNotifierProvider.notifier);
+    final colorScheme = Theme.of(context).colorScheme;
 
     Widget page;
-    switch (viewModel.selectedIndex) {
+    switch (state.selectedIndex) {
       case 0:
         page = GeneratorPage();
         break;
@@ -21,7 +22,7 @@ class MyHomePage extends ConsumerWidget {
         page = FavoritesPage();
         break;
       default:
-        throw UnimplementedError('no widget for ${viewModel.selectedIndex}');
+        throw UnimplementedError('no widget for ${state.selectedIndex}');
     }
 
     var mainArea = ColoredBox(
@@ -51,9 +52,9 @@ class MyHomePage extends ConsumerWidget {
                         label: 'Favorites',
                       ),
                     ],
-                    currentIndex: viewModel.selectedIndex,
+                    currentIndex: state.selectedIndex,
                     onTap: (value) {
-                      viewModel.setSelectedIndex(value);
+                      notifier.setSelectedIndex(value);
                     },
                   ),
                 )
@@ -75,9 +76,9 @@ class MyHomePage extends ConsumerWidget {
                         label: Text('Favorites'),
                       ),
                     ],
-                    selectedIndex: viewModel.selectedIndex,
+                    selectedIndex: state.selectedIndex,
                     onDestinationSelected: (value) {
-                      viewModel.setSelectedIndex(value);
+                      notifier.setSelectedIndex(value);
                     },
                   ),
                 ),

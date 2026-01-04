@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fy25_flutter_hands_on/view_models/home_view_model.dart';
-import 'package:fy25_flutter_hands_on/views/widgets/big_card.dart';
-import 'package:fy25_flutter_hands_on/views/widgets/history_list_view.dart';
+import 'package:fy25_flutter_hands_on/features/home/home_notifier.dart';
+import 'package:fy25_flutter_hands_on/features/home/widgets/big_card.dart';
+import 'package:fy25_flutter_hands_on/features/home/widgets/history_list_view.dart';
 
 class GeneratorPage extends ConsumerWidget {
   const GeneratorPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var viewModel = ref.watch(homeViewModelProvider);
-    var pair = viewModel.current;
+    final state = ref.watch(homeNotifierProvider);
+    final notifier = ref.read(homeNotifierProvider.notifier);
+    final pair = state.current;
 
     IconData icon;
-    if (viewModel.favorites.contains(pair)) {
+    if (state.favorites.contains(pair)) {
       icon = Icons.favorite;
     } else {
       icon = Icons.favorite_border;
@@ -35,7 +36,7 @@ class GeneratorPage extends ConsumerWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  viewModel.toggleFavorite();
+                  notifier.toggleFavorite();
                 },
                 icon: Icon(icon),
                 label: Text('Like'),
@@ -43,7 +44,7 @@ class GeneratorPage extends ConsumerWidget {
               SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
-                  viewModel.getNext();
+                  notifier.getNext();
                 },
                 child: Text('Next'),
               ),
