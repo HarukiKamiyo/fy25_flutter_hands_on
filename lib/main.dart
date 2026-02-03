@@ -1,93 +1,209 @@
+import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-// アプリケーションのエントリーポイント（開始地点）です。
 void main() {
-  // runApp 関数でルートウィジェット（MyApp）を起動します。
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
-// アプリケーションのルート（根幹）となるウィジェットです。
-// 状態を持たない（静的な）StatelessWidget を継承しています。
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // MaterialApp はマテリアルデザインのアプリを作成するためのウィジェットです。
-    return MaterialApp(
-      title: 'Flutter Demo',
-      // アプリ全体のテーマ設定を行います。
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MaterialApp(
+        title: 'Namer App',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+        ),
+        home: MyHomePage(),
       ),
-      // アプリ起動時に最初に表示される画面を設定します。
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-// 状態を持つ（動的な）ウィジェットです。
-// ユーザーの操作などによって表示内容が変化する場合に使用します。
+class MyAppState extends ChangeNotifier {
+  var current = WordPair.random();
+
+  void getNext() {
+    current = WordPair.random();
+    notifyListeners();
+  }
+
+  var favorites = <WordPair>[];
+
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
+      favorites.remove(current);
+    } else {
+      favorites.add(current);
+    }
+    notifyListeners();
+  }
+}
+
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage({super.key});
 
   @override
-  // このウィジェットの状態を管理する State クラスを作成します。
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-// MyHomePage の状態（State）と UI を管理するクラスです。
 class _MyHomePageState extends State<MyHomePage> {
-  // ボタンが押された回数を保持する変数（状態）です。
-  int _counter = 0;
-
-  // カウンターを増やして画面を更新するメソッドです。
-  void _incrementCounter() {
-    // setState を呼ぶと、Flutter フレームワークに「状態が変わったので画面を再描画してほしい」と伝えます。
-    // これにより build メソッドが再度実行され、新しい _counter の値が画面に反映されます。
-    setState(() {
-      _counter++;
-    });
-  }
+  var selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold は基本的な画面レイアウト（AppBar, Body, FloatingActionButton など）を提供します。
-    return Scaffold(
-      // 画面上部のヘッダーバーです。
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // 親ウィジェット（MyHomePage）から渡されたタイトルを表示します。
-        title: Text(widget.title),
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+      case 1:
+        page = FavoritesPage();
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  extended: constraints.maxWidth >= 600,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (value) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class GeneratorPage extends StatelessWidget {
+  const GeneratorPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var pair = appState.current;
+
+    IconData icon;
+    if (appState.favorites.contains(pair)) {
+      icon = Icons.favorite;
+    } else {
+      icon = Icons.favorite_border;
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),
+          SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: Text('Like'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
-      // 画面のメインコンテンツ部分です。Center で中央寄せしています。
-      body: Center(
-        // Column は子ウィジェットを縦方向に並べます。
-        child: Column(
-          // 縦方向の中央に配置します。
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            // 現在のカウンターの値を表示します。
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    );
+  }
+}
+
+class BigCard extends StatelessWidget {
+  const BigCard({super.key, required this.pair});
+
+  final WordPair pair;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onPrimary,
+    );
+
+    return Card(
+      color: theme.colorScheme.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Text(
+          pair.asLowerCase,
+          style: style,
+          semanticsLabel: "${pair.first} ${pair.second}",
         ),
       ),
-      // 右下に表示されるフローティングアクションボタンです。
-      floatingActionButton: FloatingActionButton(
-        // ボタンが押された時に実行されるメソッドを指定します。
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    if (appState.favorites.isEmpty) {
+      return Center(child: Text('No favorites yet.'));
+    }
+
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            'You have '
+            '${appState.favorites.length} favorites:',
+          ),
+        ),
+        for (var pair in appState.favorites)
+          ListTile(
+            leading: Icon(Icons.favorite),
+            title: Text(pair.asLowerCase),
+          ),
+      ],
     );
   }
 }
