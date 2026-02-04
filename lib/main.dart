@@ -1,3 +1,4 @@
+// basic版との差分: 学習用に const 警告を一部抑制
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:english_words/english_words.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Namer App',
         theme: ThemeData(
+          // basic版との差分: Material 3 を有効化
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         ),
@@ -29,11 +31,14 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
+  // basic版との差分: 生成履歴を保持
   var history = <WordPair>[];
 
+  // basic版との差分: 履歴リストのアニメーション制御用キー
   GlobalKey? historyListKey;
 
   void getNext() {
+    // basic版との差分: 履歴を先頭に追加し、AnimatedList を更新
     history.insert(0, current);
     var animatedList = historyListKey?.currentState as AnimatedListState?;
     animatedList?.insertItem(0);
@@ -43,6 +48,7 @@ class MyAppState extends ChangeNotifier {
 
   var favorites = <WordPair>[];
 
+  // basic版との差分: 任意のペアを切り替えられるよう引数を追加
   void toggleFavorite([WordPair? pair]) {
     pair = pair ?? current;
     if (favorites.contains(pair)) {
@@ -53,6 +59,7 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // basic版との差分: お気に入り削除専用メソッド
   void removeFavorite(WordPair pair) {
     favorites.remove(pair);
     notifyListeners();
@@ -71,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // basic版との差分: 配色を取り出して UI に反映
     var colorScheme = Theme.of(context).colorScheme;
 
     Widget page;
@@ -85,8 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
         throw UnimplementedError('no widget for $selectedIndex');
     }
 
-    // The container for the current page, with its background color
-    // and subtle switching animation.
+    // basic版との差分: 背景色とページ切替アニメーションを追加
     var mainArea = ColoredBox(
       color: colorScheme.surfaceContainerHighest,
       child: AnimatedSwitcher(
@@ -98,9 +105,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < 450) {
-            // Use a more mobile-friendly layout with BottomNavigationBar
-            // on narrow screens.
+          if (constraints.maxWidth < 650) {
+            // basic版との差分: 狭い画面では BottomNavigationBar を使用
             return Column(
               children: [
                 Expanded(child: mainArea),
@@ -127,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             );
           } else {
+            // basic版との差分: 広い画面では NavigationRail を使用
             return Row(
               children: [
                 SafeArea(
@@ -181,6 +188,7 @@ class GeneratorPage extends StatelessWidget {
         children: [
           Expanded(
             flex: 3,
+            // basic版との差分: 生成履歴の表示を追加
             child: HistoryListView(),
           ),
           SizedBox(height: 10),
@@ -205,6 +213,7 @@ class GeneratorPage extends StatelessWidget {
               ),
             ],
           ),
+          // basic版との差分: 余白調整のため Spacer を追加
           Spacer(flex: 2),
         ],
       ),
@@ -233,8 +242,7 @@ class BigCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: AnimatedSize(
           duration: Duration(milliseconds: 200),
-          // Make sure that the compound word wraps correctly when the window
-          // is too narrow.
+          // basic版との差分: 単語が狭い幅でも折り返すよう Wrap を採用
           child: MergeSemantics(
             child: Wrap(
               children: [
@@ -278,7 +286,7 @@ class FavoritesPage extends StatelessWidget {
               '${appState.favorites.length} favorites:'),
         ),
         Expanded(
-          // Make better use of wide windows with a grid.
+          // basic版との差分: 広い画面では GridView で一覧表示
           child: GridView(
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 400,
@@ -287,6 +295,7 @@ class FavoritesPage extends StatelessWidget {
             children: [
               for (var pair in appState.favorites)
                 ListTile(
+                  // basic版との差分: 削除ボタンでお気に入り解除
                   leading: IconButton(
                     icon: Icon(Icons.delete_outline, semanticLabel: 'Delete'),
                     color: theme.colorScheme.primary,
@@ -315,15 +324,16 @@ class HistoryListView extends StatefulWidget {
 }
 
 class _HistoryListViewState extends State<HistoryListView> {
-  /// Needed so that [MyAppState] can tell [AnimatedList] below to animate
-  /// new items.
+  /// [MyAppState] から下の [AnimatedList] に新規追加のアニメーションを
+  /// 指示するために必要なキー。
   final _key = GlobalKey();
 
-  /// Used to "fade out" the history items at the top, to suggest continuation.
+  // basic版との差分: 生成履歴を表示するウィジェット
+  /// 上部の履歴項目を徐々に薄くして、続きがあることを示すためのグラデーション。
   static const Gradient _maskingGradient = LinearGradient(
-    // This gradient goes from fully transparent to fully opaque black...
+    // 完全な透明から完全な黒へ変化するグラデーション。
     colors: [Colors.transparent, Colors.black],
-    // ... from the top (transparent) to half (0.5) of the way to the bottom.
+    // 透明が上、下方向の 0.5 までに黒へ遷移。
     stops: [0.0, 0.5],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -336,8 +346,8 @@ class _HistoryListViewState extends State<HistoryListView> {
 
     return ShaderMask(
       shaderCallback: (bounds) => _maskingGradient.createShader(bounds),
-      // This blend mode takes the opacity of the shader (i.e. our gradient)
-      // and applies it to the destination (i.e. our animated list).
+      // シェーダー（グラデーション）の透明度を
+      // 目的の描画（AnimatedList）に適用するブレンドモード。
       blendMode: BlendMode.dstIn,
       child: AnimatedList(
         key: _key,
