@@ -1,0 +1,422 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Flutter Hands-on: 発展形コード実装 詳細解説</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css"
+      id="theme" />
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/monokai.min.css" />
+
+    <style>
+      .reveal .slides section.title-slide {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal h4,
+      .reveal h5,
+      .reveal h6 {
+        text-transform: none; /* 大文字変換を無効にする */
+      }
+      .reveal pre code {
+        max-height: 600px; /* コードブロックの最大高さを設定 */
+      }
+      /* fragment は使用しないため、関連スタイルは削除 */
+      .reveal .slides section .code-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      }
+      .reveal ul li {
+        font-size: 0.8em; /* li要素の文字サイズを小さくする */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Title Slide -->
+        <section class="title-slide">
+          <h1>Flutter ハンズオン: 発展形コード実装 詳細解説</h1>
+          <p>よりリッチで実践的なアプリケーションへ</p>
+          <aside class="notes">
+            このプレゼンテーションでは、Flutterの発展的なコード実装について解説します。
+            主な変更点として、履歴機能、アニメーション、レスポンシブ対応、UIの洗練を深掘りします。
+          </aside>
+        </section>
+
+        <!-- Introduction Slide -->
+        <section>
+          <h2>このハンズオンで学ぶこと</h2>
+          <p>
+            基本の単語生成アプリを、以下のような機能でリッチに進化させます。
+          </p>
+          <ul>
+            <li>履歴機能の実装</li>
+            <li>魅力的なアニメーションの追加</li>
+            <li>様々な画面サイズに対応するレスポンシブデザイン</li>
+            <li>使いやすさを追求したUIの洗練</li>
+          </ul>
+          <aside class="notes">
+            このスライドでは、発展形実装の主要な要素を簡潔に紹介し、聴衆の興味を引きます。
+            それぞれの項目について、なぜ重要なのか、どのように実装するのかを後続のスライドで詳しく説明することを予告します。
+          </aside>
+        </section>
+
+        <!-- 1. 状態管理の進化 (`MyAppState`) -->
+        <section>
+          <section>
+            <h2>1. 状態管理の進化 (`MyAppState`)</h2>
+            <p>アプリケーション全体のデータを管理する心臓部</p>
+            <p>特に「履歴機能」を深掘り！</p>
+            <aside class="notes">
+              最初のセクションは状態管理、特に`MyAppState`クラスの進化についてです。
+              アプリのデータ管理の中心であり、今回の履歴機能の追加がいかに重要かを強調します。
+            </aside>
+          </section>
+          <section>
+            <h3>1.1. 履歴リストと `GlobalKey` の追加</h3>
+            <h4>`MyAppState` に追加されたプロパティ</h4>
+            <pre><code class="language-dart" data-line-numbers="5-6">
+class MyAppState extends ChangeNotifier {
+  // ... basic と同じコード ...
+  var current = WordPair.random();
+  var favorites = &lt;WordPair&gt;[];
+  var history = &lt;WordPair&gt;[]; // &lt;- 追加！
+  GlobalKey? historyListKey; // &lt;- 追加！
+  // ...
+}
+                    </code></pre>
+            <ul>
+              <li>
+                <strong>`history` リスト</strong>:
+                生成した単語ペアを保存（ユーザーが見返せるように！）
+              </li>
+              <li>
+                <strong>`historyListKey`</strong>: UI
+                (<code>AnimatedList</code>) をロジックから操作する「リモコン」
+              </li>
+            </ul>
+            <aside class="notes">
+              ここでは、`history`リストと`historyListKey`のコードと役割を解説します。
+              `history`リストはユーザー体験向上のための必須機能であり、`historyListKey`はアニメーション制御のための重要な仕掛けであることを説明します。
+              コードのハイライト機能を使って、追加された行を強調します。
+            </aside>
+          </section>
+          <section>
+            <h3>1.2. `getNext` メソッドの機能拡張</h3>
+            <h4>新しい単語生成時の処理</h4>
+            <pre><code class="language-dart" data-line-numbers="2-4">
+void getNext() {
+  history.insert(0, current); // &lt;- 追加！履歴の先頭に追加
+  var animatedList = historyListKey?.currentState as AnimatedListState?; // &lt;- 追加！AnimatedListの状態を取得
+  animatedList?.insertItem(0); // &lt;- 追加！リストの先頭にアニメーション付きで追加を指示
+  current = WordPair.random();
+  notifyListeners();
+}
+                    </code></pre>
+            <ul>
+              <li>
+                <code>history.insert(0, current);</code>:
+                現在の単語を履歴の先頭に追加。
+              </li>
+              <li>
+                <code>animatedList?.insertItem(0);</code>:
+                UIに新しいアイテムが追加されたことを通知し、アニメーションをトリガー。
+              </li>
+              <li>
+                これにより、履歴リストに新しい単語が「シュッ」と滑らかに追加されます！
+                ✨
+              </li>
+            </ul>
+            <aside class="notes">
+              `getNext`メソッドの変更点について、コードをハイライトしながら詳しく説明します。
+              特に`insertItem(0)`がどのようにアニメーションを実現しているかを強調し、視覚的な効果を想起させます。
+            </aside>
+          </section>
+        </section>
+
+        <!-- 2. どんな画面サイズにも対応するレスポンシブデザイン (`MyHomePage`) -->
+        <section>
+          <section>
+            <h2>
+              2. どんな画面サイズにも対応するレスポンシブデザイン (`MyHomePage`)
+            </h2>
+            <p>スマホ、タブレット、PC... どんなデバイスでも最適表示！</p>
+            <aside class="notes">
+              第二のセクションはレスポンシブデザインです。
+              現代のアプリ開発において、様々な画面サイズへの対応がいかに重要かを導入で述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>`LayoutBuilder` の導入</h3>
+            <h4>画面サイズに応じてレイアウトを切り替え</h4>
+            <pre><code class="language-dart" data-line-numbers="4-10">
+return Scaffold(
+  body: LayoutBuilder(
+    builder: (context, constraints) {
+      if (constraints.maxWidth &lt; 450) {
+        // スマホ向けのレイアウト
+        return Column( ... );
+      } else {
+        // タブレット・PC向けのレイアウト
+        return Row( ... );
+      }
+    },
+  ),
+);
+                    </code></pre>
+            <ul>
+              <li>
+                <strong>`LayoutBuilder`</strong>:
+                親ウィジェットのサイズ情報（`constraints`）にアクセスできる「サイズ測定器」。
+              </li>
+              <li>
+                `constraints.maxWidth &lt; 450`:
+                横幅が450px未満でスマホレイアウトに切り替え。
+              </li>
+            </ul>
+            <aside class="notes">
+              `LayoutBuilder`のコードと役割を解説します。
+              `constraints`を使ってどのように画面幅を判定し、レイアウトを切り替えるかを説明します。
+              スマホとタブレット/PCでどのようなUI要素が使われるかを簡潔に述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>画面サイズに応じた2つのレイアウト</h3>
+            <div class="two-column-layout">
+              <div class="col" style="margin-top: 40px">
+                <h4>横幅が狭い場合 (スマホ)</h4>
+                <ul>
+                  <li>`Column` で縦に並べる</li>
+                  <li>ナビゲーション: `BottomNavigationBar`</li>
+                  <li>親指が届きやすく操作性UP！</li>
+                </ul>
+              </div>
+              <div class="col" style="margin-top: 40px">
+                <h4>横幅が広い場合 (タブレット/PC)</h4>
+                <ul>
+                  <li>`Row` で左右に配置</li>
+                  <li>ナビゲーション: `NavigationRail`</li>
+                  <li>スペースを有効活用し一覧性UP！</li>
+                </ul>
+              </div>
+            </div>
+            <aside class="notes">
+              スマホとタブレット/PCのレイアウトの違いを比較形式で説明します。
+              それぞれのデバイスに合わせたUIコンポーネントの選択理由を述べ、ユーザー体験の向上に繋がることを強調します。
+            </aside>
+          </section>
+        </section>
+
+        <!-- 3. アプリをリッチに見せるアニメーション -->
+        <section>
+          <section>
+            <h2>3. アプリをリッチに見せるアニメーション</h2>
+            <p>ユーザー体験を向上させる、さりげない動きの魔法</p>
+            <aside class="notes">
+              第三のセクションはアニメーションです。
+              アニメーションがユーザー体験にどのように貢献するかを導入で述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>3.1. ページ遷移アニメーション (`AnimatedSwitcher`)</h3>
+            <h4>ページ切り替え時の「フワッ」とした効果</h4>
+            <pre><code class="language-dart" data-line-numbers="3-5">
+var mainArea = ColoredBox(
+  color: colorScheme.surfaceContainerHighest,
+  child: AnimatedSwitcher(
+    duration: Duration(milliseconds: 200),
+    child: page,
+  ),
+);
+                    </code></pre>
+            <ul>
+              <li>
+                <strong>`AnimatedSwitcher`</strong>:
+                `child`が差し替えられると、自動でフェードイン・アウトアニメーションを適用。
+              </li>
+              <li>
+                <code>duration: Duration(milliseconds: 200)</code>:
+                0.2秒の滑らかな切り替え。
+              </li>
+            </ul>
+            <aside class="notes">
+              `AnimatedSwitcher`のコードと、それがもたらす視覚的効果について説明します。
+              `duration`の設定がアニメーションの質にどう影響するかを簡潔に述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>3.2. 履歴リストのフェードアウト効果 (`HistoryListView`)</h3>
+            <h4>リスト上部が画面に吸い込まれるような演出</h4>
+            <pre><code class="language-dart" data-line-numbers="1-4">
+return ShaderMask(
+  shaderCallback: (bounds) => _maskingGradient.createShader(bounds),
+  blendMode: BlendMode.dstIn,
+  child: AnimatedList( ... ),
+);
+                    </code></pre>
+            <ul>
+              <li>
+                `ShaderMask`: 子ウィジェットに特殊効果フィルターをかける。
+              </li>
+              <li>_maskingGradient : 透明から黒へのグラデーションを生成。</li>
+              <li>
+                blendMode: BlendMode.dstIn :
+                グラデーションの透明部分で、元のリストも透明に！
+              </li>
+              <li>✨ リストが自然に消えていく魔法のアニメーション！</li>
+            </ul>
+            <aside class="notes">
+              `ShaderMask`と`blendMode:
+              BlendMode.dstIn`の組み合わせによるフェードアウト効果を詳細に解説します。
+              この少し高度なテクニックがどのように視覚的な魅力を高めているかを強調します。
+            </aside>
+          </section>
+        </section>
+
+        <!-- 4. 使いやすさを追求したUIコンポーネントの改善 -->
+        <section>
+          <section>
+            <h2>4. 使いやすさを追求したUIコンponentの改善</h2>
+            <p>細部に宿る、洗練されたユーザー体験</p>
+            <aside class="notes">
+              第四のセクションはUIコンポーネントの改善です。
+              ユーザーフレンドリーなUIがいかに重要であるかを導入で述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>4.1. `BigCard` ウィジェットの改良</h3>
+            <h4>単語表示カードの見た目と振る舞い</h4>
+            <pre><code class="language-dart" data-line-numbers="3-8">
+child: AnimatedSize(
+  duration: Duration(milliseconds: 200),
+  child: MergeSemantics(
+    child: Wrap(
+      children: [
+        Text(pair.first, ...),
+        Text(pair.second, ...),
+      ],
+    ),
+  ),
+),
+                    </code></pre>
+            <ul>
+              <li>
+                <strong>`AnimatedSize`</strong>:
+                サイズ変化を「ぬるっ」と滑らかにアニメーション。
+              </li>
+              <li>
+                <strong>`Wrap`</strong>:
+                横幅が足りないと自動で折り返し、はみ出し防止。
+              </li>
+              <li>
+                <strong>`MergeSemantics`</strong>:
+                アクセシビリティ向上！2つの単語を「一つのまとまり」として読み上げ。
+              </li>
+            </ul>
+            <aside class="notes">
+              `BigCard`の改良点、特に`AnimatedSize`、`Wrap`、`MergeSemantics`について説明します。
+              それぞれのウィジェットがどのようにユーザー体験とアクセシビリティを向上させているかを具体的に述べます。
+            </aside>
+          </section>
+          <section>
+            <h3>4.2. `FavoritesPage` の改良</h3>
+            <h4>お気に入りページがグリッド表示に進化！</h4>
+            <pre><code class="language-dart" data-line-numbers="2-6">
+Expanded(
+  child: GridView(
+    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: 400,
+      childAspectRatio: 400 / 80,
+    ),
+    children: [ // ... ],
+  ),
+),
+                    </code></pre>
+            <ul>
+              <li><strong>`GridView`</strong>: 子要素を格子状に並べる。</li>
+              <li>
+                <code>SliverGridDelegateWithMaxCrossAxisExtent</code>:
+                画面幅に応じて列数を自動調整（広い画面は複数列、狭い画面は1列）。
+              </li>
+              <li>
+                <strong>削除ボタンの追加</strong>:
+                お気に入りを個別に削除できるようになり、利便性アップ！
+              </li>
+            </ul>
+            <aside class="notes">
+              `FavoritesPage`の`GridView`によるレイアウト改善について説明します。
+              `SliverGridDelegateWithMaxCrossAxisExtent`が提供する柔軟なレイアウト機能と、削除ボタンの追加による利便性向上を強調します。
+            </aside>
+          </section>
+        </section>
+
+        <!-- Summary Slide -->
+        <section class="title-slide">
+          <h2>まとめ</h2>
+          <h3>発展形アプリが提供する価値</h3>
+          <ul style="list-style-type: none; padding: 0">
+            <li>✅ <strong>状態の保持</strong>: 履歴機能で過去を振り返る</li>
+            <li>✅ <strong>柔軟なレイアウト</strong>: どんな画面でも快適に</li>
+            <li>
+              ✅ <strong>心地よいフィードバック</strong>:
+              アニメーションで操作感を向上
+            </li>
+            <li>✅ <strong>洗練されたUI/UX</strong>: 細部まで使いやすく</li>
+          </ul>
+          <p>
+            これらの変更で、より実践的でユーザーフレンドリーなアプリへ進化しました！
+          </p>
+          <aside class="notes">
+            まとめのスライドで、今回の発展形実装で得られた主要な改善点を再確認します。
+            それぞれのポイントがユーザーにどのような価値を提供するかを簡潔にまとめ、プレゼンテーションを締めくくります。
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script>
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        hash: true,
+
+        transition: "slide", // none/fade/slide/convex/concave/zoom
+        transitionSpeed: "fast", // default/fast/slow
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
