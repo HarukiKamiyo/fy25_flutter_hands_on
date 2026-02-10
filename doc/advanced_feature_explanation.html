@@ -4,25 +4,30 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
 
     <title>Flutter Hands-on: 発展形コード実装 詳細解説</title>
 
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css" />
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css"
+    />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css" />
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css"
-      id="theme" />
+      id="theme"
+    />
 
     <!-- Theme used for syntax highlighting of code -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/monokai.min.css" />
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/monokai.min.css"
+    />
 
     <style>
       .reveal .slides section.title-slide {
@@ -129,7 +134,7 @@ class MyAppState extends ChangeNotifier {
           <section>
             <h3>1.2. `getNext` メソッドの機能拡張</h3>
             <h4>新しい単語生成時の処理</h4>
-            <pre><code class="language-dart" data-line-numbers="2-4">
+            <pre><code class="language-dart" data-line-numbers="3-5">
 void getNext() {
   history.insert(0, current); // &lt;- 追加！履歴の先頭に追加
   var animatedList = historyListKey?.currentState as AnimatedListState?; // &lt;- 追加！AnimatedListの状態を取得
