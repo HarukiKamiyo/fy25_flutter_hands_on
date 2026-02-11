@@ -43,10 +43,6 @@ graph TD
     VM -->|"3. データ取得・更新"| M
     M -->|"4. 結果を返す"| VM
 
-    %% スタイル調整
-    style V fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style VM fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    style M fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
 > **ポイント**:
@@ -80,8 +76,6 @@ flowchart LR
         Model_MVVM -->|データ| VM_MVVM
     end
 
-    style MVC fill:#f9f9f9,stroke:#333,stroke-dasharray: 5 5
-    style MVVM fill:#f0f8ff,stroke:#333,stroke-dasharray: 5 5
 ```
 
 - **MVC (Model-View-Controller)**
