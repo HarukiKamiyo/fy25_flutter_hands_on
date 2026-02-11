@@ -115,19 +115,16 @@ class UserState with _$UserState {
 
 ### ② ViewModel（状態管理とロジック）
 
-**Riverpod** の `Notifier`（生成された `_$UserViewModel` を継承）を使い、状態の保持と更新ロジックを担当します。
+**Riverpod** の `Notifier`（または `AutoDisposeNotifier`）を継承し、状態の保持と更新ロジックを担当します。
 状態の更新には **Freezed** の `copyWith` を使い、`state` に代入することで Riverpod が View へ変更を通知します。
 
 ```dart
 // view_models/user_view_model.dart
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_state.dart';
 
-part 'user_view_model.g.dart';
-
-// @riverpod を付けると、内部で Notifier クラスを継承したクラスが自動生成されます
-@riverpod
-class UserViewModel extends _$UserViewModel {
+// Notifier を継承して ViewModel を定義
+class UserViewModel extends AutoDisposeNotifier<UserState> {
   @override
   UserState build() {
     // 最初の状態（初期値）を返す。
@@ -152,7 +149,44 @@ class UserViewModel extends _$UserViewModel {
     );
   }
 }
+
+// 外部から利用するための Provider を手動で定義
+final userViewModelProvider =
+    NotifierProvider.autoDispose<UserViewModel, UserState>(
+  UserViewModel.new,
+);
 ```
+
+<details>
+<summary>（参考）riverpod_generator を使用した自動生成パターンのコード</summary>
+
+```dart
+// view_models/user_view_model.dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../models/user_state.dart';
+
+part 'user_view_model.g.dart';
+
+// @riverpod を付けると、内部で Notifier クラスを継承したクラスが自動生成されます
+@riverpod
+class UserViewModel extends _$UserViewModel {
+  @override
+  UserState build() {
+    return const UserState();
+  }
+
+  Future<void> fetchUserData() async {
+    state = state.copyWith(isLoading: true);
+    await Future.delayed(const Duration(seconds: 1));
+    state = state.copyWith(
+      name: 'Flutter太郎',
+      age: 20,
+      isLoading: false,
+    );
+  }
+}
+```
+</details>
 
 ### ③ View（画面表示）
 
