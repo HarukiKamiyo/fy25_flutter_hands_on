@@ -9,11 +9,12 @@ class GeneratorPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var viewModel = ref.watch(homeViewModelProvider);
-    var pair = viewModel.current;
+    var state = ref.watch(homeViewModelProvider);
+    var notifier = ref.read(homeViewModelProvider.notifier);
+    var pair = state.current;
 
     IconData icon;
-    if (viewModel.favorites.contains(pair)) {
+    if (state.favorites.contains(pair)) {
       icon = Icons.favorite;
     } else {
       icon = Icons.favorite_border;
@@ -35,7 +36,7 @@ class GeneratorPage extends ConsumerWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  viewModel.toggleFavorite();
+                  notifier.toggleFavorite();
                 },
                 icon: Icon(icon),
                 label: Text('Like'),
@@ -43,7 +44,7 @@ class GeneratorPage extends ConsumerWidget {
               SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
-                  viewModel.getNext();
+                  notifier.getNext();
                 },
                 child: Text('Next'),
               ),
