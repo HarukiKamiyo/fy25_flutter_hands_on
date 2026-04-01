@@ -21,8 +21,9 @@ class _HistoryListViewState extends ConsumerState<HistoryListView> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(homeViewModelProvider);
-    viewModel.historyListKey = _key;
+    final state = ref.watch(homeViewModelProvider);
+    final notifier = ref.read(homeViewModelProvider.notifier);
+    notifier.historyListKey = _key;
 
     return ShaderMask(
       shaderCallback: (bounds) => _maskingGradient.createShader(bounds),
@@ -31,17 +32,17 @@ class _HistoryListViewState extends ConsumerState<HistoryListView> {
         key: _key,
         reverse: true,
         padding: EdgeInsets.only(top: 100),
-        initialItemCount: viewModel.history.length,
+        initialItemCount: state.history.length,
         itemBuilder: (context, index, animation) {
-          final pair = viewModel.history[index];
+          final pair = state.history[index];
           return SizeTransition(
             sizeFactor: animation,
             child: Center(
               child: TextButton.icon(
                 onPressed: () {
-                  viewModel.toggleFavorite(pair);
+                  notifier.toggleFavorite(pair);
                 },
-                icon: viewModel.favorites.contains(pair)
+                icon: state.favorites.contains(pair)
                     ? Icon(Icons.favorite, size: 12)
                     : SizedBox(),
                 label: Text(

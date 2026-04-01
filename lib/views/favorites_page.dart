@@ -8,9 +8,10 @@ class FavoritesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var theme = Theme.of(context);
-    var viewModel = ref.watch(homeViewModelProvider);
+    var state = ref.watch(homeViewModelProvider);
+    var notifier = ref.read(homeViewModelProvider.notifier);
 
-    if (viewModel.favorites.isEmpty) {
+    if (state.favorites.isEmpty) {
       return Center(
         child: Text('No favorites yet.'),
       );
@@ -22,7 +23,7 @@ class FavoritesPage extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.all(30),
           child: Text('You have '
-              '${viewModel.favorites.length} favorites:'),
+              '${state.favorites.length} favorites:'),
         ),
         Expanded(
           child: GridView(
@@ -31,13 +32,13 @@ class FavoritesPage extends ConsumerWidget {
               childAspectRatio: 400 / 80,
             ),
             children: [
-              for (var pair in viewModel.favorites)
+              for (var pair in state.favorites)
                 ListTile(
                   leading: IconButton(
                     icon: Icon(Icons.delete_outline, semanticLabel: 'Delete'),
                     color: theme.colorScheme.primary,
                     onPressed: () {
-                      viewModel.removeFavorite(pair);
+                      notifier.removeFavorite(pair);
                     },
                   ),
                   title: Text(
